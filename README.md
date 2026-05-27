@@ -24,4 +24,18 @@ reviewmind-ai/
 
 ## Status
 
-Initial project structure and documentation.
+Backend foundation added with a FastAPI app, health check route, environment configuration, and local development runner.
+
+## Run Backend
+
+```bash
+cd backend
+python -m pip install -r requirements.txt
+python dev_server.py
+```
+
+Health check:
+
+```text
+http://127.0.0.1:8000/api/health
+```
