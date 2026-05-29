@@ -24,7 +24,7 @@ reviewmind-ai/
 
 ## Status
 
-Backend foundation added with a FastAPI app, health check route, environment configuration, and local development runner.
+Review ingestion layer added with CSV import and bulk-paste cleanup endpoints.
 
 ## Run Backend
 
@@ -38,4 +38,11 @@ Health check:
 
 ```text
 http://127.0.0.1:8000/api/health
+```
+
+Import endpoints:
+
+```text
+POST /api/import/csv
+POST /api/import/paste
 ```
