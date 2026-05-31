@@ -24,7 +24,7 @@ reviewmind-ai/
 
 ## Status
 
-Gemini analysis workflow added with structured JSON output for mobile app review insights.
+RICE prioritization added for ranking recurring mobile app review issues by reach, impact, confidence, and effort.
 
 ## Run Backend
 
@@ -51,4 +51,10 @@ Analysis endpoint:
 
 ```text
 POST /api/analyze
+```
+
+Prioritization endpoint:
+
+```text
+POST /api/prioritize
 ```

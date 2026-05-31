@@ -57,6 +57,11 @@ class ReviewAnalysisRequest(BaseModel):
     reviews: list[str]
 
 
+class PrioritizationRequest(BaseModel):
+    issues: list[dict[str, Any]]
+    review_count: int
+
+
 @app.get("/api/health", response_model=HealthResponse)
 def health() -> dict[str, Any]:
     return {
@@ -78,6 +83,15 @@ async def analyze_reviews(payload: ReviewAnalysisRequest) -> dict[str, Any]:
         raise HTTPException(status_code=503, detail="Gemini API key is not configured.")
 
     return await analyze_with_gemini(payload.product_name, reviews, api_key)
+
+
+@app.post("/api/prioritize")
+def prioritize_review_issues(payload: PrioritizationRequest) -> dict[str, Any]:
+    prioritized = prioritize_issues(payload.issues, payload.review_count)
+    return {
+        "prioritized_issues": prioritized,
+        "count": len(prioritized),
+    }
 
 
 @app.post("/api/import/csv", response_model=ReviewImportResponse)
@@ -138,6 +152,7 @@ async def analyze_with_gemini(product_name: str, reviews: list[str], api_key: st
 
     text = data["candidates"][0]["content"]["parts"][0]["text"]
     analysis = parse_json_response(text)
+    analysis["prioritized_issues"] = prioritize_issues(analysis.get("issues", []), len(reviews))
     analysis["product_name"] = product_name
     analysis["review_count"] = len(reviews)
     analysis["mode"] = "gemini"
@@ -184,6 +199,68 @@ def sanitize_error(exc: Exception) -> str:
     message = re.sub(r"key=[^&\s')]+", "key=[redacted]", message)
     message = re.sub(r"AIza[0-9A-Za-z_\-]+", "[redacted-api-key]", message)
     return message
+
+
+def prioritize_issues(issues: list[dict[str, Any]], review_count: int) -> list[dict[str, Any]]:
+    scored_issues = []
+    safe_review_count = max(review_count, 1)
+
+    for issue in issues:
+        frequency = int(issue.get("frequency") or 1)
+        category = str(issue.get("category") or "Other")
+        severity = str(issue.get("severity") or "medium").lower()
+
+        reach = min(100, round((frequency / safe_review_count) * 100))
+        impact = severity_to_impact(severity)
+        confidence = estimate_confidence(frequency, safe_review_count)
+        effort = estimate_effort(category, severity)
+        rice_score = round((reach * impact * (confidence / 100)) / effort, 2)
+
+        scored_issue = {
+            **issue,
+            "reach": reach,
+            "impact": impact,
+            "confidence": confidence,
+            "effort": effort,
+            "rice_score": rice_score,
+        }
+        scored_issues.append(scored_issue)
+
+    return sorted(scored_issues, key=lambda item: item["rice_score"], reverse=True)
+
+
+def severity_to_impact(severity: str) -> int:
+    return {
+        "critical": 5,
+        "high": 4,
+        "medium": 3,
+        "low": 2,
+    }.get(severity, 3)
+
+
+def estimate_confidence(frequency: int, review_count: int) -> int:
+    review_share = frequency / max(review_count, 1)
+    confidence = 45 + min(35, frequency * 8) + min(20, int(review_share * 100))
+    return min(100, confidence)
+
+
+def estimate_effort(category: str, severity: str) -> int:
+    base_effort = {
+        "Crash": 4,
+        "Performance": 3,
+        "Login": 3,
+        "Payment": 4,
+        "UX": 2,
+        "Feature Request": 4,
+        "Support": 2,
+        "Positive Feedback": 1,
+        "Other": 3,
+    }.get(category, 3)
+
+    if severity == "critical":
+        return min(5, base_effort + 1)
+
+    return base_effort
 
 
 def find_review_column(headers: Any) -> str:
