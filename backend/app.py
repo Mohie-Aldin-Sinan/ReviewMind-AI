@@ -1,12 +1,14 @@
 import csv
 import io
+import json
 import os
 import re
 from pathlib import Path
 from typing import Any
 
+import httpx
 from dotenv import load_dotenv
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
@@ -50,6 +52,11 @@ class ReviewImportResponse(BaseModel):
     count: int
 
 
+class ReviewAnalysisRequest(BaseModel):
+    product_name: str
+    reviews: list[str]
+
+
 @app.get("/api/health", response_model=HealthResponse)
 def health() -> dict[str, Any]:
     return {
@@ -57,6 +64,20 @@ def health() -> dict[str, Any]:
         "environment": os.getenv("APP_ENV", "development"),
         "ai_provider_configured": bool(os.getenv("GEMINI_API_KEY")),
     }
+
+
+@app.post("/api/analyze")
+async def analyze_reviews(payload: ReviewAnalysisRequest) -> dict[str, Any]:
+    reviews = dedupe_reviews([clean_review(review) for review in payload.reviews])
+
+    if len(reviews) < 3:
+        raise HTTPException(status_code=400, detail="At least 3 reviews are required for analysis.")
+
+    api_key = os.getenv("GEMINI_API_KEY")
+    if not api_key:
+        raise HTTPException(status_code=503, detail="Gemini API key is not configured.")
+
+    return await analyze_with_gemini(payload.product_name, reviews, api_key)
 
 
 @app.post("/api/import/csv", response_model=ReviewImportResponse)
@@ -92,6 +113,77 @@ def root() -> dict[str, str]:
         "name": "ReviewMind AI",
         "status": "backend online",
     }
+
+
+async def analyze_with_gemini(product_name: str, reviews: list[str], api_key: str) -> dict[str, Any]:
+    model = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
+    prompt = build_analysis_prompt(product_name, reviews)
+
+    request_body = {
+        "contents": [{"role": "user", "parts": [{"text": prompt}]}],
+        "generationConfig": {
+            "temperature": 0.2,
+            "responseMimeType": "application/json",
+        },
+    }
+
+    try:
+        async with httpx.AsyncClient(timeout=45) as client:
+            response = await client.post(url, json=request_body)
+            response.raise_for_status()
+            data = response.json()
+    except httpx.HTTPError as exc:
+        raise HTTPException(status_code=502, detail=sanitize_error(exc)) from exc
+
+    text = data["candidates"][0]["content"]["parts"][0]["text"]
+    analysis = parse_json_response(text)
+    analysis["product_name"] = product_name
+    analysis["review_count"] = len(reviews)
+    analysis["mode"] = "gemini"
+    return analysis
+
+
+def build_analysis_prompt(product_name: str, reviews: list[str]) -> str:
+    numbered_reviews = "\n".join(f"{index + 1}. {review}" for index, review in enumerate(reviews[:120]))
+    return f"""
+You are ReviewMind AI, a mobile app review analyst.
+
+Analyze reviews for {product_name}. Return only valid JSON using this schema:
+{{
+  "summary": "2 sentence executive summary",
+  "sentiment": {{"positive": number, "neutral": number, "negative": number}},
+  "issues": [
+    {{
+      "title": "short issue title",
+      "category": "Crash|Performance|Login|Payment|UX|Feature Request|Support|Positive Feedback|Other",
+      "severity": "critical|high|medium|low",
+      "frequency": number,
+      "evidence": ["short customer quote"],
+      "recommendation": "specific product action"
+    }}
+  ],
+  "feature_requests": ["short feature request"],
+  "positive_signals": ["short positive signal"]
+}}
+
+Reviews:
+{numbered_reviews}
+""".strip()
+
+
+def parse_json_response(text: str) -> dict[str, Any]:
+    try:
+        return json.loads(text)
+    except json.JSONDecodeError as exc:
+        raise HTTPException(status_code=502, detail="Gemini returned invalid JSON.") from exc
+
+
+def sanitize_error(exc: Exception) -> str:
+    message = str(exc)
+    message = re.sub(r"key=[^&\s')]+", "key=[redacted]", message)
+    message = re.sub(r"AIza[0-9A-Za-z_\-]+", "[redacted-api-key]", message)
+    return message
 
 
 def find_review_column(headers: Any) -> str:

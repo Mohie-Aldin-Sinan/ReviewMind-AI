@@ -24,7 +24,7 @@ reviewmind-ai/
 
 ## Status
 
-Review ingestion layer added with CSV import and bulk-paste cleanup endpoints.
+Gemini analysis workflow added with structured JSON output for mobile app review insights.
 
 ## Run Backend
 
@@ -45,4 +45,10 @@ Import endpoints:
 ```text
 POST /api/import/csv
 POST /api/import/paste
+```
+
+Analysis endpoint:
+
+```text
+POST /api/analyze
 ```
