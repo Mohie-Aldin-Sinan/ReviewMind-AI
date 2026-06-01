@@ -24,7 +24,11 @@ reviewmind-ai/
 
 ## Status
 
-RICE prioritization added for ranking recurring mobile app review issues by reach, impact, confidence, and effort.
+Frontend dashboard layout added for review intake, issue clustering, and release-priority planning.
+
+## Run Frontend
+
+Open `frontend/index.html` in a browser to preview the dashboard shell.
 
 ## Run Backend
 

@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ReviewMind AI</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <aside class="sidebar" aria-label="Workspace navigation">
+        <div class="brand">
+          <span class="brand-mark">R</span>
+          <div>
+            <p class="eyebrow">ReviewMind AI</p>
+            <h1>App Review Command Center</h1>
+          </div>
+        </div>
+
+        <nav class="nav-list" aria-label="Primary">
+          <a class="nav-item active" href="#">Dashboard</a>
+          <a class="nav-item" href="#">Imports</a>
+          <a class="nav-item" href="#">Issue Clusters</a>
+          <a class="nav-item" href="#">Release Plan</a>
+        </nav>
+
+        <section class="source-panel">
+          <p class="panel-label">Active Source</p>
+          <h2>Google Play Reviews</h2>
+          <p>Mobile app feedback from the last 90 days.</p>
+        </section>
+      </aside>
+
+      <section class="workspace">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Founder workspace</p>
+            <h2>Prioritize what users keep asking for</h2>
+          </div>
+          <button class="primary-button" type="button">Analyze Reviews</button>
+        </header>
+
+        <section class="metric-grid" aria-label="Review metrics">
+          <article class="metric-card">
+            <span>Reviews Imported</span>
+            <strong>1,284</strong>
+            <small>CSV, paste, and app store sources</small>
+          </article>
+          <article class="metric-card">
+            <span>Recurring Issues</span>
+            <strong>37</strong>
+            <small>Grouped from noisy user feedback</small>
+          </article>
+          <article class="metric-card">
+            <span>Critical Themes</span>
+            <strong>8</strong>
+            <small>High reach and high impact</small>
+          </article>
+          <article class="metric-card">
+            <span>Release Candidates</span>
+            <strong>12</strong>
+            <small>Ranked with RICE scoring</small>
+          </article>
+        </section>
+
+        <section class="main-grid">
+          <article class="panel import-panel">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Import</p>
+                <h3>Review intake</h3>
+              </div>
+              <span class="status-pill">Ready</span>
+            </div>
+
+            <div class="upload-zone">
+              <p>Drop a CSV or paste copied app store reviews.</p>
+              <button class="secondary-button" type="button">Choose File</button>
+            </div>
+
+            <label class="text-input-label" for="reviews">Bulk paste</label>
+            <textarea id="reviews" rows="8" placeholder="Paste reviews from Google Play, App Store, CSV exports, support tickets, or survey comments."></textarea>
+          </article>
+
+          <article class="panel priority-panel">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Priorities</p>
+                <h3>Next release candidates</h3>
+              </div>
+              <span class="status-pill muted">RICE</span>
+            </div>
+
+            <div class="priority-list" id="priorityList"></div>
+          </article>
+        </section>
+
+        <section class="panel insights-panel">
+          <div class="panel-header">
+            <div>
+              <p class="eyebrow">Insights</p>
+              <h3>Issue clusters by user impact</h3>
+            </div>
+            <button class="ghost-button" type="button">Export Plan</button>
+          </div>
+
+          <div class="cluster-grid" id="clusterGrid"></div>
+        </section>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
