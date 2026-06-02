@@ -32,6 +32,7 @@ body {
 }
 
 button,
+input,
 textarea {
   font: inherit;
 }
@@ -165,6 +166,11 @@ textarea {
   color: #ffffff;
 }
 
+.primary-button:disabled {
+  cursor: wait;
+  background: #94a3b8;
+}
+
 .primary-button:hover {
   background: var(--brand-dark);
 }
@@ -259,6 +265,16 @@ textarea {
   font-weight: 700;
 }
 
+.text-input {
+  width: 100%;
+  min-height: 42px;
+  margin-bottom: 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0 12px;
+  color: var(--ink);
+}
+
 textarea {
   width: 100%;
   resize: vertical;
@@ -268,10 +284,36 @@ textarea {
   color: var(--ink);
 }
 
+.form-message {
+  min-height: 22px;
+  margin: 10px 0 0;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.form-message.error {
+  color: var(--bad);
+}
+
+.form-message.success {
+  color: var(--good);
+}
+
 .priority-list {
   display: grid;
   gap: 12px;
   margin-top: 20px;
+}
+
+.priority-list.empty,
+.cluster-grid.empty {
+  display: block;
+  color: var(--muted);
+}
+
+.priority-list.empty p,
+.cluster-grid.empty p {
+  margin: 0;
 }
 
 .priority-item {
@@ -308,6 +350,14 @@ textarea {
 .priority-score {
   color: var(--brand-dark);
   font-weight: 800;
+}
+
+.evidence-list {
+  display: grid;
+  gap: 6px;
+  margin: 10px 0 0;
+  padding-left: 18px;
+  color: var(--muted);
 }
 
 .insights-panel {

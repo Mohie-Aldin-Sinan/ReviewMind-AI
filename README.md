@@ -24,11 +24,11 @@ reviewmind-ai/
 
 ## Status
 
-Frontend dashboard layout added for review intake, issue clustering, and release-priority planning.
+Frontend dashboard connected to the review import and AI analysis workflow.
 
 ## Run Frontend
 
-Open `frontend/index.html` in a browser to preview the dashboard shell.
+Start the backend, then open `frontend/index.html` in a browser. The dashboard sends pasted reviews to the local FastAPI API at `http://127.0.0.1:8000`.
 
 ## Run Backend
 
