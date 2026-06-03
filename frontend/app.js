@@ -2,6 +2,7 @@ const API_BASE_URL = "http://127.0.0.1:8000";
 const MIN_REVIEWS = 3;
 
 const analyzeButton = document.querySelector("#analyzeButton");
+const exportButton = document.querySelector("#exportButton");
 const chooseFileButton = document.querySelector("#chooseFileButton");
 const csvFileInput = document.querySelector("#csvFile");
 const uploadZone = document.querySelector("#uploadZone");
@@ -17,8 +18,10 @@ const criticalCount = document.querySelector("#criticalCount");
 const candidateCount = document.querySelector("#candidateCount");
 
 let selectedCsv = null;
+let latestAnalysis = null;
 
 analyzeButton.addEventListener("click", analyzeReviews);
+exportButton.addEventListener("click", exportReleasePlan);
 chooseFileButton.addEventListener("click", () => csvFileInput.click());
 csvFileInput.addEventListener("change", handleFileSelection);
 reviewsInput.addEventListener("input", handlePasteInput);
@@ -60,13 +63,37 @@ async function analyzeReviews() {
       reviews: imported.reviews,
     });
 
+    latestAnalysis = analysis;
     renderAnalysis(analysis);
+    exportButton.disabled = false;
     setMessage(`Analyzed ${analysis.review_count} reviews for ${analysis.product_name}.`, "success");
   } catch (error) {
+    exportButton.disabled = !latestAnalysis;
     setMessage(error.message || "Analysis failed. Check that the backend is running.", "error");
   } finally {
     setLoading(false);
   }
+}
+
+function exportReleasePlan() {
+  if (!latestAnalysis) {
+    setMessage("Run an analysis before exporting a release plan.", "error");
+    return;
+  }
+
+  const markdown = buildReleasePlan(latestAnalysis);
+  const blob = new Blob([markdown], { type: "text/markdown;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  const fileName = `${slugify(latestAnalysis.product_name || "reviewmind")}-release-plan.md`;
+
+  link.href = url;
+  link.download = fileName;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+  setMessage(`Exported ${fileName}.`, "success");
 }
 
 async function handleFileSelection(event) {
@@ -148,6 +175,76 @@ function renderAnalysis(analysis) {
     (analysis.issues || []).filter((issue) => issue.severity === "critical" || issue.severity === "high").length,
   );
   candidateCount.textContent = String(priorities.length);
+}
+
+function buildReleasePlan(analysis) {
+  const priorities = analysis.prioritized_issues || analysis.issues || [];
+  const issues = analysis.issues || [];
+
+  return [
+    `# ${analysis.product_name || "Product"} Release Plan`,
+    "",
+    `Review count: ${analysis.review_count || 0}`,
+    `Analysis mode: ${analysis.mode || "local"}`,
+    "",
+    "## Executive Summary",
+    "",
+    analysis.summary || "No summary was returned for this review set.",
+    "",
+    "## Prioritized Work",
+    "",
+    priorities.length ? priorities.map(formatPriority).join("\n\n") : "No prioritized issues were returned.",
+    "",
+    "## Issue Clusters",
+    "",
+    issues.length ? issues.map(formatIssueCluster).join("\n\n") : "No issue clusters were returned.",
+    "",
+    "## Positive Signals",
+    "",
+    formatList(analysis.positive_signals || []),
+    "",
+    "## Feature Requests",
+    "",
+    formatList(analysis.feature_requests || []),
+    "",
+  ].join("\n");
+}
+
+function formatPriority(issue, index) {
+  const score = issue.rice_score ?? "-";
+  const recommendation = issue.recommendation || "No recommendation provided.";
+  const evidence = formatList(issue.evidence || []);
+
+  return [
+    `### ${index + 1}. ${issue.title || "Untitled issue"}`,
+    "",
+    `- Category: ${issue.category || "Other"}`,
+    `- Severity: ${issue.severity || "medium"}`,
+    `- Frequency: ${issue.frequency || 1}`,
+    `- RICE score: ${score}`,
+    `- Recommendation: ${recommendation}`,
+    "- Evidence:",
+    evidence,
+  ].join("\n");
+}
+
+function formatIssueCluster(issue) {
+  return [
+    `### ${issue.title || issue.category || "Issue cluster"}`,
+    "",
+    `- Category: ${issue.category || "Other"}`,
+    `- Severity: ${issue.severity || "medium"}`,
+    `- Mentions: ${issue.frequency || 1}`,
+    `- Action: ${issue.recommendation || "No recommendation provided."}`,
+  ].join("\n");
+}
+
+function formatList(items) {
+  if (!items.length) {
+    return "- None captured";
+  }
+
+  return items.map((item) => `- ${item}`).join("\n");
 }
 
 function renderPriorities(priorityItems) {
@@ -236,7 +333,15 @@ function updateImportMetrics(imported) {
 function setLoading(isLoading) {
   analyzeButton.disabled = isLoading;
   analyzeButton.textContent = isLoading ? "Analyzing..." : "Analyze Reviews";
+  exportButton.disabled = isLoading || !latestAnalysis;
   importStatus.textContent = isLoading ? "Working" : importStatus.textContent;
+}
+
+function slugify(value) {
+  return String(value)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
 }
 
 function setMessage(message, type) {

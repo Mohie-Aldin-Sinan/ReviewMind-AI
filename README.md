@@ -24,7 +24,7 @@ reviewmind-ai/
 
 ## Status
 
-Frontend dashboard supports pasted reviews and CSV upload for the local analysis workflow.
+Frontend dashboard supports pasted reviews, CSV upload, AI analysis, and Markdown release-plan export.
 
 ## Run Frontend
 
