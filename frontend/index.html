@@ -76,9 +76,10 @@
             <label class="text-input-label" for="productName">Product name</label>
             <input id="productName" class="text-input" type="text" value="ReviewMind Mobile" />
 
-            <div class="upload-zone">
-              <p>Drop a CSV or paste copied app store reviews.</p>
-              <button class="secondary-button" type="button">Choose File</button>
+            <div class="upload-zone" id="uploadZone">
+              <input id="csvFile" class="file-input" type="file" accept=".csv,text/csv" />
+              <p id="fileStatus">Drop a CSV export or paste copied app store reviews.</p>
+              <button class="secondary-button" id="chooseFileButton" type="button">Choose CSV</button>
             </div>
 
             <label class="text-input-label" for="reviews">Bulk paste</label>

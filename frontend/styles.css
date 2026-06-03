@@ -241,6 +241,7 @@ textarea {
 }
 
 .upload-zone {
+  position: relative;
   display: grid;
   gap: 14px;
   place-items: center;
@@ -253,9 +254,23 @@ textarea {
   text-align: center;
 }
 
+.upload-zone.dragging {
+  border-color: var(--brand);
+  background: #eff6ff;
+}
+
 .upload-zone p {
   margin: 0;
   color: var(--muted);
+}
+
+.file-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
 }
 
 .text-input-label {

@@ -24,11 +24,11 @@ reviewmind-ai/
 
 ## Status
 
-Frontend dashboard connected to the review import and AI analysis workflow.
+Frontend dashboard supports pasted reviews and CSV upload for the local analysis workflow.
 
 ## Run Frontend
 
-Start the backend, then open `frontend/index.html` in a browser. The dashboard sends pasted reviews to the local FastAPI API at `http://127.0.0.1:8000`.
+Start the backend, then open `frontend/index.html` in a browser. The dashboard sends pasted reviews and CSV uploads to the local FastAPI API at `http://127.0.0.1:8000`.
 
 ## Run Backend
 
