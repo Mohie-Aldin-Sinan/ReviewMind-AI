@@ -50,6 +50,12 @@ python -m pip install -r requirements.txt
 python dev_server.py
 ```
 
+## Run Tests
+
+```bash
+python -m pytest tests
+```
+
 Health check:
 
 ```text
