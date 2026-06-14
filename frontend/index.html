@@ -18,10 +18,10 @@
         </div>
 
         <nav class="nav-list" aria-label="Primary">
-          <a class="nav-item active" href="#">Dashboard</a>
-          <a class="nav-item" href="#">Imports</a>
-          <a class="nav-item" href="#">Issue Clusters</a>
-          <a class="nav-item" href="#">Release Plan</a>
+          <a class="nav-item active" href="#dashboard">Dashboard</a>
+          <a class="nav-item" href="#imports">Imports</a>
+          <a class="nav-item" href="#insights">Issue Clusters</a>
+          <a class="nav-item" href="#priorities">Release Plan</a>
         </nav>
 
         <section class="source-panel">
@@ -31,7 +31,7 @@
         </section>
       </aside>
 
-      <section class="workspace">
+      <section class="workspace" id="dashboard">
         <header class="topbar">
           <div>
             <p class="eyebrow">Founder workspace</p>
@@ -64,7 +64,7 @@
         </section>
 
         <section class="main-grid">
-          <article class="panel import-panel">
+          <article class="panel import-panel" id="imports">
             <div class="panel-header">
               <div>
                 <p class="eyebrow">Import</p>
@@ -87,7 +87,7 @@
             <p class="form-message" id="formMessage" role="status"></p>
           </article>
 
-          <article class="panel priority-panel">
+          <article class="panel priority-panel" id="priorities">
             <div class="panel-header">
               <div>
                 <p class="eyebrow">Priorities</p>
@@ -102,7 +102,7 @@
           </article>
         </section>
 
-        <section class="panel insights-panel">
+        <section class="panel insights-panel" id="insights">
           <div class="panel-header">
             <div>
               <p class="eyebrow">Insights</p>

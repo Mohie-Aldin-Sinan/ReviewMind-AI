@@ -31,10 +31,18 @@ body {
     sans-serif;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 button,
 input,
 textarea {
   font: inherit;
+}
+
+[id] {
+  scroll-margin-top: 18px;
 }
 
 .app-shell {
